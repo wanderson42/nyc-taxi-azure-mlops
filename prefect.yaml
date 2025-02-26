@@ -1,0 +1,71 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: nyc-tlc-azure-mlops
+prefect-version: 3.1.11
+
+# build section allows you to manage and build docker images
+build:
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push:
+- prefect_azure.deployments.steps.push_to_azure_blob_storage:
+    id: push_code
+    requires: prefect-azure[blob_storage]>=0.2.8
+    container: mlflowcontainer
+    folder: azure-mlops
+    credentials: '{{ prefect.blocks.azure-blob-storage-credentials.blob-credentials
+      }}'
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect_azure.deployments.steps.pull_from_azure_blob_storage:
+    id: pull_code
+    requires: prefect-azure[blob_storage]>=0.2.8
+    container: '{{ push_code.container }}'
+    folder: '{{ push_code.folder }}'
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: nyc-tlc-xgb-deploy
+  version:
+  tags: []
+  description: nyc-trip-data workflow orchestration
+  schedules:
+  - interval: 600.0
+    timezone: America/Sao_Paulo
+  flow_name:
+  entrypoint: train.py:main_flow
+  
+  parameters: {}
+  work_pool:
+    name: vm-mlops
+    work_queue_name:
+    job_variables: {}
+- name: xgb-green-trip-data
+  version:
+  tags: []
+  concurrency_limit:
+  description: "Fluxo principal que treina modelos com base em dados dinâmicos por
+    data.\n\nArgs:\n    date (str): Data no formato 'YYYY-MM-DD'.\n    base_url (str):
+    URL base dos dados."
+  entrypoint: train.py:main_flow
+  parameters: {}
+  work_pool:
+    name: vm-mlops
+    work_queue_name:
+    job_variables: {}
+  enforce_parameter_schema: true
+  schedules:
+  - cron: 0 9 15 * *
+    timezone: America/Sao_Paulo
+    day_or: true
+    active: true
+  pull:
+  - prefect_azure.deployments.steps.pull_from_azure_blob_storage:
+      id: pull_code
+      requires: prefect-azure[blob_storage]>=0.2.8
+      container: mlflowcontainer
+      folder: azure-mlops

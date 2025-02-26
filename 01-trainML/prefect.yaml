@@ -1,0 +1,41 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: 01-trainML
+prefect-version: 3.1.12
+
+# build section allows you to manage and build docker images
+build: null
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push:
+- prefect_azure.deployments.steps.push_to_azure_blob_storage:
+    id: push_code
+    requires: prefect-azure[blob_storage]>=0.2.8
+    container: mlflowcontainer
+    folder: 01-trainML
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect_azure.deployments.steps.pull_from_azure_blob_storage:
+    id: pull_code
+    requires: prefect-azure[blob_storage]>=0.2.8
+    container: '{{ push_code.container }}'
+    folder: '{{ push_code.folder }}'
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: null
+  version: null
+  tags: []
+  description: null
+  schedule: {}
+  flow_name: null
+  entrypoint: null
+  parameters: {}
+  work_pool:
+    name: null
+    work_queue_name: null
+    job_variables: {}
