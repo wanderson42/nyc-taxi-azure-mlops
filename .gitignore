@@ -12,7 +12,8 @@
 
 # 🔹 Ignorar arquivos de dados e modelos  
 **/*.parquet  
-**/*.csv  
+**/*.csv
+02-deployment/  
 data/  
 models/  
 mlartifacts/  
