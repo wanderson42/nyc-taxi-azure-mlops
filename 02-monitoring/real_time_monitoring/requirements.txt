@@ -1,0 +1,13 @@
+scikit-learn==1.3.1
+dataclasses==0.6
+Flask~=2.0.1
+pandas>=1.1.5
+Werkzeug~=2.0.1
+requests
+prometheus_client~=0.11.0
+pyyaml~=5.4.1
+tqdm
+pyarrow
+prefect
+pymongo
+evidently==0.2.8
